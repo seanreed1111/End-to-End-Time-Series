@@ -84,7 +84,9 @@ if __name__ == '__main__':
 
     m.fit(Product_2001, freq='D')
 
-    future = m.make_future_dataframe(Product_2001, periods=200)
+    future = m.make_future_dataframe(Product_2001, 
+                                     periods=200,
+                                     n_historic_predictions=len(Product_2001))
     forecast = m.predict(future)  
     m.plot(forecast)
     plt.show()
