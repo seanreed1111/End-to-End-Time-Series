@@ -1,5 +1,6 @@
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+import seaborn as sns
 import numpy as np
 from numpy.core.fromnumeric import sort
 import pandas as pd
@@ -32,13 +33,15 @@ def clean_and_save():
 
     df = df.dropna().set_index('Date').sort_index()
     
-    def gt0(x):
-        if x> 0:
-            return x
-        else:
-            return 0
+    #ensure minimum forecast is zero
+    # def gt0(x):
+    #     if x > 0:
+    #         return x
+    #     else:
+    #         return 0
     
-    df.loc[:,'Order_Demand'] = df['Order_Demand'].apply(gt0)
+    #df.loc[:,'Order_Demand'] = df['Order_Demand'].apply(gt0)
+    df.loc[:,'Order_Demand'] = df['Order_Demand'].apply(lambda x: 0 if x < 0 else x)
     df.to_pickle("DATA/forecast-demand.pkl")
     
 
@@ -48,7 +51,17 @@ if __name__ == '__main__':
     df = pd.read_pickle("DATA/forecast-demand.pkl")
 
     products = df.groupby('Product_Code')
+    
+    # prodmed, prodmax = products.median(),products.max()
+    # print(prodmin.head(10))
+    
+    # _ = sns.boxplot(y=prodmed['Order_Demand'])
+    # _ = sns.boxplot(y=prodmax['Order_Demand'])
+    # plt.show()
+    #describe.reset_index().plot(x='Date')
     # test one product for forecasting
-    Product_2171 = products.get_group("Product_2171").reset_index()
-    Product_2171.plot(x='Date', y='Order_Demand', ylim = (-20,80))
+    
+    Product_2001 = products.get_group("Product_2001").reset_index()
+    Product_2001.plot(x='Date', y='Order_Demand')
     plt.show()
+    print(Product_2001.info())
