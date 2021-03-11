@@ -1,6 +1,7 @@
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
+from numpy.core.fromnumeric import sort
 import pandas as pd
 import os
 
@@ -28,11 +29,10 @@ def clean_and_save():
     # for col in df.columns[:3]:
     #     print(f"\n\n{df[col].unique()}")
 
-    df = df.dropna().set_index('Date')
-    df.to_pickle("forecast_demand.pkl")
+    df = df.dropna().set_index('Date').sort_index()
+    df.to_pickle("DATA/forecast-demand.pkl")
 
 if __name__ == '__main__':
     from neuralprophet import NeuralProphet
-    new = pd.read_pickle("forecast_demand.pkl")
-    print(new.head())
-    dir(NeuralProphet)
+    df = pd.read_pickle("DATA/forecast-demand.pkl")
+    # print(df.head())
