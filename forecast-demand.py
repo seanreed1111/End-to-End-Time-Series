@@ -49,7 +49,7 @@ if __name__ == '__main__':
     from neuralprophet import NeuralProphet
     # clean_and_save()
     df = pd.read_pickle("DATA/forecast-demand.pkl")
-    products = df.groupby('Product_Code').resample('D').mean()
+    products = df.groupby('Product_Code')
     
     # prodmed, prodmax = products.median(),products.max()
     # print(prodmin.head(10))
@@ -60,28 +60,34 @@ if __name__ == '__main__':
     #describe.reset_index().plot(x='Date')
     # test one product for forecasting
     
-    Product_2001 = products.query("Product_Code == 'Product_2001'").reset_index()
+    Product_2001 = (products.resample('D')
+                    .mean()
+                    .query("Product_Code == 'Product_2001'")
+                    .reset_index()
+                    )
 
-    Product_2001.plot(x='Date', y='Order_Demand')
-    plt.show()
-    # Product_2001 = (Product_2001[['Date','Order_Demand']]
-    #                 .rename(columns={'Date':'ds', 'Order_Demand':'y'})
-    # )
+    # Product_2001.plot(x='Date', y='Order_Demand')
+    # plt.show()
+    Product_2001 = (Product_2001[['Date','Order_Demand']]
+                    .rename(columns={'Date':'ds', 'Order_Demand':'y'})
+    )
     # print(Product_2001.describe())
     # print(Product_2001.tail(200))
     
-    # m = NeuralProphet(
-    # n_forecasts=10,
-    # n_lags=12,
-    # changepoints_range=0.85,
-    # n_changepoints=30,
-    # epochs=10,
-    # )
-    # m.fit(Product_2001, freq='D')
+    m = NeuralProphet(
+        n_forecasts=200,
+        n_lags=12,
+        changepoints_range=0.85,
+        n_changepoints=30,
+        epochs=10,
+    )
 
-    # future = m.make_future_dataframe(shunyi, periods=10)
-    # forecast = m.predict(future)  
-    # m.plot(forecast)
-    # plt.show()
+    m.fit(Product_2001, freq='D')
+
+    future = m.make_future_dataframe(Product_2001, periods=200)
+    forecast = m.predict(future)  
+    m.plot(forecast)
+    plt.show()
     
-    # print(df.query("Product_Code == 'Product_2001'").tail(100))
+    # print(df.index)
+    # print(Product_2001.index)
