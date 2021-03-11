@@ -46,11 +46,10 @@ def clean_and_save():
     
 
 if __name__ == '__main__':
-    #from neuralprophet import NeuralProphet
+    from neuralprophet import NeuralProphet
     # clean_and_save()
     df = pd.read_pickle("DATA/forecast-demand.pkl")
-
-    products = df.groupby('Product_Code')
+    products = df.groupby('Product_Code').resample('D').mean()
     
     # prodmed, prodmax = products.median(),products.max()
     # print(prodmin.head(10))
@@ -61,7 +60,28 @@ if __name__ == '__main__':
     #describe.reset_index().plot(x='Date')
     # test one product for forecasting
     
-    Product_2001 = products.get_group("Product_2001").reset_index()
+    Product_2001 = products.query("Product_Code == 'Product_2001'").reset_index()
+
     Product_2001.plot(x='Date', y='Order_Demand')
     plt.show()
-    print(Product_2001.info())
+    # Product_2001 = (Product_2001[['Date','Order_Demand']]
+    #                 .rename(columns={'Date':'ds', 'Order_Demand':'y'})
+    # )
+    # print(Product_2001.describe())
+    # print(Product_2001.tail(200))
+    
+    # m = NeuralProphet(
+    # n_forecasts=10,
+    # n_lags=12,
+    # changepoints_range=0.85,
+    # n_changepoints=30,
+    # epochs=10,
+    # )
+    # m.fit(Product_2001, freq='D')
+
+    # future = m.make_future_dataframe(shunyi, periods=10)
+    # forecast = m.predict(future)  
+    # m.plot(forecast)
+    # plt.show()
+    
+    # print(df.query("Product_Code == 'Product_2001'").tail(100))
