@@ -78,12 +78,13 @@ if __name__ == '__main__':
     
 
     m = NeuralProphet(
-        normalize=True,
+        normalize='standardize',
+        num_hidden_layers = 1,
         n_forecasts=60,
-        n_lags=15,
+        n_lags=2,
         
         #seasonality_mode="multiplicative",
-        epochs=5
+        epochs=10
     )
 
 
