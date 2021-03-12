@@ -46,9 +46,11 @@ def clean_and_save():
     
 
 if __name__ == '__main__':
-    from neuralprophet import NeuralProphet
+    from neuralprophet import NeuralProphet, set_random_seed
     # clean_and_save()
+    set_random_seed(42)
     df = pd.read_pickle("DATA/forecast-demand.pkl")
+    # df.loc[:,'Order_Demand'] = df['Order_Demand'].apply(lambda x: math.log(x+1))
     products = df.groupby('Product_Code')
     
     # prodmed, prodmax = products.median(),products.max()
@@ -60,36 +62,45 @@ if __name__ == '__main__':
     #describe.reset_index().plot(x='Date')
     # test one product for forecasting
     
-    Product_2001 = (products.resample('D')
-                    .mean()
-                    .query("Product_Code == 'Product_2001'")
+    Product_1766 = (products.resample('D')
+                    .median()
+                    .query("Product_Code == 'Product_1766'")
                     .reset_index()
                     )
 
-    # Product_2001.plot(x='Date', y='Order_Demand')
+    # Product_1766.plot(x='Date', y='Order_Demand')
     # plt.show()
-    Product_2001 = (Product_2001[['Date','Order_Demand']]
+    Product_1766 = (Product_1766[['Date','Order_Demand']]
                     .rename(columns={'Date':'ds', 'Order_Demand':'y'})
     )
-    # print(Product_2001.describe())
-    # print(Product_2001.tail(200))
+    # print(Product_1766.describe())
+    # print(Product_1766.tail(200))
     
+
     m = NeuralProphet(
-        n_forecasts=200,
-        n_lags=12,
-        changepoints_range=0.85,
-        n_changepoints=30,
-        epochs=10,
+        n_forecasts=60,
+        n_lags=15,
+        #seasonality_mode="multiplicative",
+        epochs=10
     )
 
-    m.fit(Product_2001, freq='D')
 
-    future = m.make_future_dataframe(Product_2001, 
-                                     periods=200,
-                                     n_historic_predictions=len(Product_2001))
+    m.fit(Product_1766, freq='D')
+
+    future = m.make_future_dataframe(Product_1766, 
+                                     periods=60,
+                                     n_historic_predictions=len(Product_1766))
     forecast = m.predict(future)  
     m.plot(forecast)
     plt.show()
     
     # print(df.index)
-    # print(Product_2001.index)
+    # print(Product_1766.index)
+    
+    # df_train, df_val = m.split_df(Product_1766, valid_p=0.2, freq='D')
+    # train_metrics = m.fit(df_train, freq='D')
+    # val_metrics = m.test(df_val)
+    # print(train_metrics)
+    # print(val_metrics)
+    metrics = m.fit(Product_1766, validate_each_epoch=True, valid_p=0.2, freq='D')
+    print(metrics)
